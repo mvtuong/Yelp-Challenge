@@ -1,5 +1,4 @@
-HelloWorld
+Yelp Challenge
 ==========
 
-Demo how to use EGit
-Read this file CAREFULLY @@ Kehe CAI
+Under constructions
