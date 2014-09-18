@@ -2,4 +2,4 @@ HelloWorld
 ==========
 
 Demo how to use EGit
-Read this file CAREFULLY @@ kekekeCai
+Read this file CAREFULLY @@ Kehe CAI
