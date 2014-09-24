@@ -1,7 +1,12 @@
 
 import re
 import io, json
-from pprint import pprint
+#from pprint import pprint
+
+import smtplib
+from email.mime.text import MIMEText
+
+from time import gmtime, strftime
 
 def words(text):
     """An iterator over tokens (words) in text. Replace this with a
@@ -9,14 +14,12 @@ def words(text):
     """
 
     for word in text.split():
-        # normalize words by lowercasing and dropping non-alpha
-        # characters
+        # normalize words by lowercasing and dropping non-alpha characters
         normed = re.sub('[^a-z]', '', word.lower())
 
         if normed:
             yield normed
-            #print normed
-
+            
 def undefinedfunction(keyword1, keyword2, result):
     if keyword1 == 'strongsubj' and keyword2 == 'positive':
         result[0]+=1
@@ -39,46 +42,65 @@ def undefinedfunction(keyword1, keyword2, result):
 
 class Histogram():
     def run(self, filename, dictionary):
+        
+        starttime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        
+        with open(dictionary) as dicObject:    
+            dicData = json.load(dicObject)
 
-        with open(dictionary) as dicobject:
-            dicdata = dicobject.readlines()
-            #for line in dicdata:
-            #    print(re.split('\s+|\=+', line))
         with open(filename) as fileobject:
             listOfHistogramAndRating = []
+            i = 0
             for line in fileobject:
+                i += 1
+                if i > 1000:
+                    break
                 if line == '\n':
                     break
                 data = json.loads(line)
                 result = [0, 0, 0, 0, 0, 0]
                 for word in words(data["text"]):
-                    for line in dicdata:
-                        dicline = re.split('\s+|\=+', line)
-                        if word == dicline[5]:
-                            #print(dicline[5] + " " + dicline[1] + " " + dicline[11])
-                            undefinedfunction(dicline[1], dicline[11], result)
-
-                #print(" Rating: ")
+                    for item in dicData:
+                        if word == item["word"]:
+                            undefinedfunction(item["type"], item["priorpolarity"], result)
+                            #print(item["word"] + " " + item["type"] + " " + item["priorpolarity"])
+                #print("\nRating: ")
                 #print(data["stars"])
                 #print("Histogram: ")
                 #print(result)
-
+                #print('\n')
                 listOfHistogramAndRating.append({'rating': data["stars"], 'histogram': result})
-                #print(listOfHistogramAndRating)
-
-
+                
 
             with io.open('output.json', 'w', encoding='utf-8') as outfile:
                 outfile.write(unicode(json.dumps(listOfHistogramAndRating, ensure_ascii=False)))
 
-                print "End of a review-------------------------------------------------------------"""
         print "FINISHED"
+        # Define email addresses to use
+        #addr_to   = 'caikehe@gmail.com'
+        #addr_from = 'walleve@mail.com'
+ 
+        # Define SMTP email server details
+        #smtp_server = 'smtp.mail.com'
+        #smtp_user   = 'walleve@mail.com'
+        #smtp_pass   = 'pwd'
+        
+        endtime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
-            #with open('output.json') as data_file:
-            #    data = json.load(data_file)
-            #    for line in data:
-            #        print(line["rating"])
+        mailmessage = 'This is a notification email to show that the task is completed\n' + "Start time: " + starttime + " End time: " + endtime + "\n"
+        print(mailmessage)
+        # Construct email
+        #msg = MIMEText(mailmessage)
+        #msg['To'] = addr_to
+        #msg['From'] = addr_from
+        #msg['Subject'] = 'Notification Email'
+ 
+        # Send the message via an SMTP server
+        #s = smtplib.SMTP(smtp_server)
+        #s.login(smtp_user,smtp_pass)
+        #s.sendmail(addr_from, addr_to, msg.as_string())
+        #s.quit()
+
 
 if __name__ == "__main__":
-    #Histogram().run("yelp_academic_dataset_review.json", "subjclueslen1-HLTEMNLP05.tff")
-    Histogram().run("yelp_academic_dataset_review.json", "mydictionary.txt")
+    Histogram().run("yelp_academic_dataset_review.json", "mydictionary.json")
